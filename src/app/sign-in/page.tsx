@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import {
   Wrench,
   Mail,
@@ -14,8 +16,69 @@ import {
 } from "lucide-react";
 
 export default function SignInPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { error } = await authClient.signIn.email({
+        email,
+        password,
+        rememberMe,
+      });
+
+      if (error) {
+        setErrorMessage(error.message || "Invalid email or password.");
+        return;
+      }
+
+      const sessionResult = await authClient.getSession();
+
+      if (sessionResult.error || !sessionResult.data?.user) {
+        setErrorMessage("Login successful, but session could not be loaded.");
+        return;
+      }
+
+      const userRole = (
+        sessionResult.data.user as typeof sessionResult.data.user & {
+          role?: string;
+        }
+      ).role;
+
+      if (userRole === "admin") {
+        router.push("/dashboard/admin");
+      } else if (userRole === "technician") {
+        router.push("/dashboard/technician");
+      } else if (userRole === "customer") {
+        router.push("/dashboard/customer");
+      } else {
+        setErrorMessage("Your account role is not configured.");
+        return;
+      }
+
+      router.refresh();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#F8FAFC] px-4 py-12">
@@ -79,7 +142,8 @@ export default function SignInPage() {
             </p>
           </div>
 
-          <form className="space-y-6">
+          <form onSubmit={handleSignIn} className="space-y-6">
+
             {/* Email */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -95,6 +159,8 @@ export default function SignInPage() {
                 <input
                   type="email"
                   placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-4 outline-none transition focus:border-[#F59E0B] focus:ring-2 focus:ring-amber-100"
                 />
@@ -116,6 +182,8 @@ export default function SignInPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-12 outline-none transition focus:border-[#F59E0B] focus:ring-2 focus:ring-amber-100"
                 />
@@ -155,13 +223,21 @@ export default function SignInPage() {
               </Link>
             </div>
 
+            {/* Error Message */}
+            {errorMessage && (
+              <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                {errorMessage}
+              </p>
+            )}
+
             {/* Sign In Button */}
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#F59E0B] py-4 font-bold text-[#142D4E] transition hover:bg-amber-500"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#F59E0B] py-4 font-bold text-[#142D4E] transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Sign In
-              <ArrowRight size={19} />
+              {loading ? "Signing In..." : "Sign In"}
+              {!loading && <ArrowRight size={19} />}
             </button>
 
             {/* Divider */}
@@ -173,10 +249,11 @@ export default function SignInPage() {
               <div className="flex-grow border-t border-slate-200" />
             </div>
 
-            {/* Google Sign In UI */}
+            {/* Google Sign In */}
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+              disabled
+              className="flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-lg border border-slate-200 py-3 font-semibold text-slate-400 opacity-70"
             >
               <svg
                 viewBox="0 0 48 48"
@@ -200,7 +277,6 @@ export default function SignInPage() {
                 <path
                   fill="#FBBC05"
                   d="M10.3 28.36A14.4 14.4 0 0 1 9.5 24c0-1.51.27-2.98.76-4.36l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.85.92 7.49 2.56 10.55l7.74-6.19Z"
-                  transform="translate(0 0)"
                 />
               </svg>
               Continue with Google

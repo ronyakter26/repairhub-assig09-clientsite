@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import {
   Wrench,
   User,
@@ -18,9 +20,65 @@ import {
 } from "lucide-react";
 
 export default function SignUpPage() {
-  const [role, setRole] = useState("customer");
+  const router = useRouter();
+
+  const [role, setRole] = useState<"customer" | "technician">("customer");
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [area, setArea] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!agreed) {
+      setErrorMessage("Please agree to the Terms & Conditions.");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { data, error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        role,
+        phone,
+        area,
+      });
+
+      if (error) {
+        setErrorMessage(error.message || "Account creation failed.");
+        return;
+      }
+
+      if (data) {
+        router.push(
+          role === "technician"
+            ? "/dashboard/technician"
+            : "/dashboard/customer"
+        );
+        router.refresh();
+      }
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#F8FAFC] px-4 py-12">
@@ -58,6 +116,7 @@ export default function SignUpPage() {
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[#F59E0B]">
                 <ShieldCheck size={24} />
               </div>
+
               <div>
                 <h3 className="mb-1 font-bold">Trusted Professionals</h3>
                 <p className="text-sm leading-6 text-slate-300">
@@ -70,6 +129,7 @@ export default function SignUpPage() {
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[#F59E0B]">
                 <Wrench size={24} />
               </div>
+
               <div>
                 <h3 className="mb-1 font-bold">Easy Repair Management</h3>
                 <p className="text-sm leading-6 text-slate-300">
@@ -91,20 +151,25 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          <form className="space-y-5">
+          <form onSubmit={handleSignUp} className="space-y-5">
+
             {/* Full Name */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Full Name
               </label>
+
               <div className="relative">
                 <User
                   size={19}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
+
                 <input
                   type="text"
                   placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                   className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-4 outline-none transition focus:border-[#F59E0B] focus:ring-2 focus:ring-amber-100"
                 />
@@ -116,14 +181,18 @@ export default function SignUpPage() {
               <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Email Address
               </label>
+
               <div className="relative">
                 <Mail
                   size={19}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
+
                 <input
                   type="email"
                   placeholder="example@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-4 outline-none transition focus:border-[#F59E0B] focus:ring-2 focus:ring-amber-100"
                 />
@@ -135,14 +204,18 @@ export default function SignUpPage() {
               <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Phone Number
               </label>
+
               <div className="relative">
                 <Phone
                   size={19}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
+
                 <input
                   type="tel"
                   placeholder="Enter your phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   required
                   className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-4 outline-none transition focus:border-[#F59E0B] focus:ring-2 focus:ring-amber-100"
                 />
@@ -154,14 +227,18 @@ export default function SignUpPage() {
               <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Area / Address
               </label>
+
               <div className="relative">
                 <MapPin
                   size={19}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
+
                 <input
                   type="text"
                   placeholder="Enter your area or address"
+                  value={area}
+                  onChange={(e) => setArea(e.target.value)}
                   required
                   className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-4 outline-none transition focus:border-[#F59E0B] focus:ring-2 focus:ring-amber-100"
                 />
@@ -218,6 +295,8 @@ export default function SignUpPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
                   className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-12 outline-none transition focus:border-[#F59E0B] focus:ring-2 focus:ring-amber-100"
@@ -246,18 +325,26 @@ export default function SignUpPage() {
                 onChange={(e) => setAgreed(e.target.checked)}
                 className="mt-1 h-4 w-4 accent-[#F59E0B]"
               />
+
               <span>
                 I agree to the Terms & Conditions and Privacy Policy.
               </span>
             </label>
 
+            {/* Error Message */}
+            {errorMessage && (
+              <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                {errorMessage}
+              </p>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
-              disabled={!agreed}
+              disabled={!agreed || loading}
               className="w-full rounded-lg bg-[#F59E0B] py-4 font-bold text-[#142D4E] transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
 
             <p className="text-center text-sm text-slate-600">

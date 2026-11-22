@@ -1,4 +1,7 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   BriefcaseBusiness,
@@ -9,6 +12,7 @@ import {
   Wrench,
   ArrowRight,
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 const stats = [
   {
@@ -32,6 +36,29 @@ const stats = [
 ];
 
 export default function TechnicianDashboard() {
+  const [jwtStatus, setJwtStatus] = useState("Checking...");
+  
+  useEffect(() => {
+    const testJWT = async () => {
+      try {
+        const response = await fetchWithAuth("/api/protected");
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "JWT verification failed");
+        }
+
+        setJwtStatus(result.message);
+      } catch (error) {
+        setJwtStatus(
+          error instanceof Error ? error.message : "JWT test failed"
+        );
+      }
+    };
+
+    testJWT();
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -41,6 +68,10 @@ export default function TechnicianDashboard() {
           </h1>
           <p className="mt-2 text-slate-500">
             Manage your services and repair requests.
+          </p>
+
+          <p className="mt-3 text-sm text-slate-600">
+            JWT Test: <span className="font-semibold">{jwtStatus}</span>
           </p>
         </div>
 
