@@ -16,5 +16,30 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  user: {
+    additionalFields: {
+      role: {
+  type: ["customer", "technician"],
+  required: true,
+        input: true,
+      },
+      phone: {
+        type: "string",
+        required: true,
+        input: true,
+      },
+      area: {
+        type: "string",
+        required: true,
+        input: true,
+      },
+      bio: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+    },
+  },
+
   plugins: [jwt()],
 });
