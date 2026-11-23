@@ -1,138 +1,107 @@
 
-"use client";
+type Service = {
+  _id: string;
+  title: string;
+  category: string;
+  description: string;
+  image: string;
+  basePrice: number;
+  estimatedDuration: string;
+  serviceMode: string;
+  serviceArea: string;
+  technicianName: string;
+};
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Search, SlidersHorizontal } from "lucide-react";
+type PageProps = {
+  searchParams: Promise<{
+    search?: string;
+    category?: string;
+    sort?: string;
+  }>;
+};
 
-const services = [
-  {
-    id: 1,
-    title: "Smartphone Repair",
-    category: "Mobile & Gadgets",
-    price: 500,
-    technician: "Rahim Ahmed",
-    image: "/smartphone.jpg",
-  },
-  {
-    id: 2,
-    title: "Laptop Repair",
-    category: "Computer & Laptop",
-    price: 800,
-    technician: "Karim Hasan",
-    image: "/laptop.jpg",
-  },
-  {
-    id: 3,
-    title: "Air Conditioner Repair",
-    category: "Home Appliances",
-    price: 1000,
-    technician: "Sabbir Hossain",
-    image: "/ac-repair.jpg",
-  },
-  {
-    id: 4,
-    title: "Refrigerator Repair",
-    category: "Home Appliances",
-    price: 700,
-    technician: "Hasan Mahmud",
-    image: "/refrigerator.jpg",
-  },
-  {
-    id: 5,
-    title: "Television Repair",
-    category: "Electronics",
-    price: 600,
-    technician: "Nayeem Islam",
-    image: "/television.jpg",
-  },
-  {
-    id: 6,
-    title: "Washing Machine Repair",
-    category: "Home Appliances",
-    price: 900,
-    technician: "Rashed Khan",
-    image: "/washing-machine.jpg",
-  },
-];
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const categories = [
-  "All Categories",
   "Mobile & Gadgets",
   "Computer & Laptop",
   "Home Appliances",
   "Electronics",
 ];
 
-export default function ServicesPage() {
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All Categories");
-  const [sort, setSort] = useState("default");
+async function getServices(
+  search: string,
+  category: string,
+  sort: string
+): Promise<Service[]> {
+  try {
+    const params = new URLSearchParams();
 
-  const filteredServices = services
-    .filter((service) => {
-      const matchesSearch = service.title
-        .toLowerCase()
-        .includes(search.toLowerCase());
+    if (search) params.set("search", search);
+    if (category && category !== "all") {
+      params.set("category", category);
+    }
+    if (sort) params.set("sort", sort);
 
-      const matchesCategory =
-        category === "All Categories" ||
-        service.category === category;
+    const response = await fetch(
+      `${API_URL}/api/services?${params.toString()}`,
+      { cache: "no-store" }
+    );
 
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (sort === "low-to-high") return a.price - b.price;
-      if (sort === "high-to-low") return b.price - a.price;
-      return 0;
-    });
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    return data.services || [];
+  } catch (error) {
+    console.error("Failed to load services:", error);
+    return [];
+  }
+}
+
+export default async function ServicesPage({
+  searchParams,
+}: PageProps) {
+  const params = await searchParams;
+
+  const search = params.search || "";
+  const category = params.category || "all";
+  const sort = params.sort || "newest";
+
+  const services = await getServices(search, category, sort);
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-gray-50 px-4 py-12">
       <div className="mx-auto max-w-7xl">
-
-        {/* Heading */}
-        <div className="mb-12 text-center">
-          <span className="mb-3 inline-block rounded-full bg-orange-100 px-4 py-2 text-sm font-semibold text-[#F59E0B]">
-            OUR SERVICES
-          </span>
-
-          <h1 className="mb-4 text-3xl font-bold text-[#142D4E] sm:text-4xl">
-            Explore Repair Services
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            Browse Repair Services
           </h1>
-
-          <p className="mx-auto max-w-2xl text-[#64748B]">
-            Find trusted professionals for your electronic devices
-            and home appliance repair needs.
+          <p className="mt-3 text-gray-600">
+            Find trusted technicians for your repair needs.
           </p>
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-10 grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-3">
+        <form
+          method="GET"
+          action="/services"
+          className="mb-8 grid grid-cols-1 gap-4 rounded-xl bg-white p-5 shadow-sm md:grid-cols-4"
+        >
+          <input
+            type="text"
+            name="search"
+            defaultValue={search}
+            placeholder="Search services..."
+            className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+          />
 
-          {/* Search */}
-          <div className="relative">
-            <Search
-              size={20}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-
-            <input
-              type="text"
-              placeholder="Search services..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-4 outline-none focus:border-[#F59E0B]"
-            />
-          </div>
-
-          {/* Category Filter */}
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="rounded-lg border border-slate-200 px-4 py-3 outline-none focus:border-[#F59E0B]"
+            name="category"
+            defaultValue={category}
+            className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           >
+            <option value="all">All Categories</option>
             {categories.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -140,85 +109,109 @@ export default function ServicesPage() {
             ))}
           </select>
 
-          {/* Price Sorting */}
-          <div className="relative">
-            <SlidersHorizontal
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            />
+          <select
+            name="sort"
+            defaultValue={sort}
+            className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+          >
+            <option value="newest">Newest First</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+          </select>
 
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 py-3 pl-11 pr-4 outline-none focus:border-[#F59E0B]"
-            >
-              <option value="default">Sort by: Default</option>
-              <option value="low-to-high">Price: Low to High</option>
-              <option value="high-to-low">Price: High to Low</option>
-            </select>
-          </div>
-        </div>
+          <button
+            type="submit"
+            className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+          >
+            Apply Filters
+          </button>
+        </form>
 
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="font-medium text-[#142D4E]">
-            Showing {filteredServices.length} services
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Available Services
+          </h2>
+          <p className="text-sm text-gray-500">
+            {services.length} services found
           </p>
         </div>
 
-        {/* Service Cards */}
-        {filteredServices.length > 0 ? (
-          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredServices.map((service) => (
-              <div
-                key={service.id}
-                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl"
+        {/* Services */}
+        {services.length === 0 ? (
+          <div className="rounded-xl bg-white px-5 py-16 text-center shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-800">
+              No Services Found
+            </h3>
+            <p className="mt-2 text-gray-500">
+              No approved services match your search. Try another search or category.
+            </p>
+            <a
+              href="/services"
+              className="mt-5 inline-block rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+            >
+              Clear Filters
+            </a>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((service) => (
+              <article
+                key={service._id}
+                className="overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="relative h-52 overflow-hidden">
-                  <Image
-                    src={service.image}
-                    alt={service.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition duration-500 group-hover:scale-110"
-                  />
-                </div>
+                <img
+                  src={service.image || "/placeholder.png"}
+                  alt={service.title}
+                  className="h-52 w-full object-cover"
+                />
 
                 <div className="p-5">
-                  <span className="inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#142D4E]">
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
                     {service.category}
                   </span>
 
-                  <h2 className="mt-3 text-xl font-bold text-[#142D4E]">
+                  <h3 className="mt-4 text-xl font-bold text-gray-900">
                     {service.title}
-                  </h2>
+                  </h3>
 
-                  <p className="mt-3 text-sm text-[#64748B]">
-                    Technician: {service.technician}
+                  <p className="mt-2 line-clamp-2 text-sm text-gray-600">
+                    {service.description}
                   </p>
 
-                  <p className="mt-2 font-bold text-[#F59E0B]">
-                    Starting from ৳{service.price}
-                  </p>
+                  <div className="mt-4 space-y-2 text-sm text-gray-600">
+                    <p>
+                      <strong>Technician:</strong>{" "}
+                      {service.technicianName || "Technician"}
+                    </p>
+                    <p>
+                      <strong>Duration:</strong>{" "}
+                      {service.estimatedDuration || "Not specified"}
+                    </p>
+                    <p>
+                      <strong>Service Mode:</strong>{" "}
+                      {service.serviceMode || "Not specified"}
+                    </p>
+                    <p>
+                      <strong>Service Area:</strong>{" "}
+                      {service.serviceArea || "Not specified"}
+                    </p>
+                  </div>
 
-                  <Link
-                    href={`/services/${service.id}`}
-                    className="mt-5 block rounded-lg bg-[#142D4E] px-5 py-3 text-center font-semibold text-white transition hover:bg-[#1e416d]"
-                  >
-                    View Details →
-                  </Link>
+                  <div className="mt-5 flex items-center justify-between border-t pt-4">
+                    <p className="text-lg font-bold text-blue-700">
+                      ৳{Number(service.basePrice || 0).toLocaleString("en-BD")}
+                    </p>
+
+                    <a
+                      href={`/services/${service._id}`}
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                    >
+                      View Details
+                    </a>
+                  </div>
                 </div>
-              </div>
+              </article>
             ))}
-          </div>
-        ) : (
-          <div className="rounded-2xl bg-white px-6 py-16 text-center">
-            <h3 className="text-xl font-bold text-[#142D4E]">
-              No Services Found
-            </h3>
-            <p className="mt-2 text-[#64748B]">
-              Try another search term or category.
-            </p>
           </div>
         )}
       </div>

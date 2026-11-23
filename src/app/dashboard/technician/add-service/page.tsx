@@ -32,16 +32,17 @@ export default function AddServicePage() {
       event.target.value = "";
       return;
     }
-    toast.success("Image selected successfully!");
 
     setSelectedImage(file);
     setImagePreview(URL.createObjectURL(file));
+    toast.success("Image selected successfully!");
   };
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
+
     const form = event.currentTarget;
 
     if (!selectedImage) {
@@ -70,8 +71,6 @@ export default function AddServicePage() {
         }
       );
 
-      console.log("ImgBB Status:", imageResponse.status);
-console.log("ImgBB Response:", imageResponse.headers.get("content-type"));
       const imageResult = await imageResponse.json();
 
       if (!imageResponse.ok || !imageResult.success) {
@@ -82,16 +81,25 @@ console.log("ImgBB Response:", imageResponse.headers.get("content-type"));
 
       const imageUrl = imageResult.data.url;
 
-      // Step 2: Get form data
-const formData = new FormData(form);
+      // Step 2: Prepare service data
+      const formData = new FormData(form);
+
       const serviceData = {
-        title: String(formData.get("title")),
+        title: String(formData.get("title")).trim(),
         category: String(formData.get("category")),
-        description: String(formData.get("description")),
-        startingPrice: Number(formData.get("startingPrice")),
+        description: String(formData.get("description")).trim(),
+        basePrice: Number(formData.get("basePrice")),
+        estimatedDuration: String(
+          formData.get("estimatedDuration")
+        ).trim(),
         serviceMode: String(formData.get("serviceMode")),
+        serviceArea: String(formData.get("serviceArea")).trim(),
         image: imageUrl,
       };
+
+      if (serviceData.basePrice <= 0) {
+        throw new Error("Base price must be greater than 0.");
+      }
 
       // Step 3: Save service to backend
       const response = await fetchWithAuth("/api/services", {
@@ -110,7 +118,7 @@ const formData = new FormData(form);
 
       toast.success("Service submitted successfully!");
 
-form.reset();
+      form.reset();
       setSelectedImage(null);
       setImagePreview("");
     } catch (error) {
@@ -201,13 +209,13 @@ form.reset();
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Starting Price (৳)
+              Base Price (৳)
             </label>
             <input
               type="number"
-              name="startingPrice"
+              name="basePrice"
               min="1"
-              placeholder="Enter starting price"
+              placeholder="Enter base price"
               required
               className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-[#F59E0B]"
             />
@@ -226,10 +234,35 @@ form.reset();
               <option value="" disabled>
                 Select service mode
               </option>
-              <option value="at-home">At Home</option>
-              <option value="at-shop">At Shop</option>
-              <option value="both">Both</option>
+              <option value="Home Visit">Home Visit</option>
+              <option value="Shop Drop-off">Shop Drop-off</option>
             </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Estimated Duration
+            </label>
+            <input
+              type="text"
+              name="estimatedDuration"
+              placeholder="e.g. 1-2 hours"
+              required
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-[#F59E0B]"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Service Area
+            </label>
+            <input
+              type="text"
+              name="serviceArea"
+              placeholder="e.g. Chattogram"
+              required
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-[#F59E0B]"
+            />
           </div>
 
           <div>
@@ -245,15 +278,18 @@ form.reset();
                     alt="Service preview"
                     className="h-48 w-full rounded-lg object-cover"
                   />
+
                   <button
                     type="button"
                     onClick={(event) => {
                       event.preventDefault();
                       setSelectedImage(null);
                       setImagePreview("");
+
                       const input = document.getElementById(
                         "service-image"
                       ) as HTMLInputElement;
+
                       if (input) input.value = "";
                     }}
                     className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white"
