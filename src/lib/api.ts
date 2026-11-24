@@ -1,8 +1,9 @@
 
 import { authClient } from "@/lib/auth-client";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/+$/, "");
 
 export async function fetchWithAuth(
   endpoint: string,
@@ -18,7 +19,11 @@ export async function fetchWithAuth(
 
   headers.set("Authorization", `Bearer ${data.token}`);
 
-  return fetch(`${API_URL}${endpoint}`, {
+  const cleanEndpoint = endpoint.startsWith("/")
+    ? endpoint
+    : `/${endpoint}`;
+
+  return fetch(`${API_URL}${cleanEndpoint}`, {
     ...options,
     headers,
   });
