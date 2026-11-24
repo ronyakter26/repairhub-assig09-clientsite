@@ -21,8 +21,8 @@ export default function Navbar() {
   const { data: session, isPending } = authClient.useSession();
 
   const user = session?.user as
-    | (typeof session.user & { role?: string })
-    | undefined;
+  | { role?: string; name?: string; email?: string; image?: string }
+  | undefined;
 
   const dashboardHref =
     user?.role === "admin"

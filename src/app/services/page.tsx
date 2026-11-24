@@ -1,4 +1,4 @@
-
+export const instant = false;
 type Service = {
   _id: string;
   title: string;

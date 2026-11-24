@@ -14,50 +14,96 @@ import {
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
 
-const stats = [
-  {
-    title: "Total Services",
-    value: "0",
-    icon: Wrench,
-    color: "bg-blue-50 text-blue-600",
-  },
-  {
-    title: "Pending Requests",
-    value: "0",
-    icon: Clock,
-    color: "bg-orange-50 text-orange-600",
-  },
-  {
-    title: "Completed Jobs",
-    value: "0",
-    icon: CheckCircle,
-    color: "bg-green-50 text-green-600",
-  },
-];
-
 export default function TechnicianDashboard() {
   const [jwtStatus, setJwtStatus] = useState("Checking...");
-  
-  useEffect(() => {
-    const testJWT = async () => {
-      try {
-        const response = await fetchWithAuth("/api/protected");
-        const result = await response.json();
+  const [totalServices, setTotalServices] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState(0);
+  const [completedJobs, setCompletedJobs] = useState(0);
 
-        if (!response.ok) {
-          throw new Error(result.message || "JWT verification failed");
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const [serviceResponse, bookingResponse, jwtResponse] =
+          await Promise.all([
+            fetchWithAuth("/api/my-services"),
+            fetchWithAuth("/api/bookings/technician"),
+            fetchWithAuth("/api/protected"),
+          ]);
+
+        const serviceData = await serviceResponse.json();
+        const bookingData = await bookingResponse.json();
+        const jwtData = await jwtResponse.json();
+
+        if (!serviceResponse.ok) {
+          throw new Error(
+            serviceData.message || "Failed to load services."
+          );
         }
 
-        setJwtStatus(result.message);
+        if (!bookingResponse.ok) {
+          throw new Error(
+            bookingData.message || "Failed to load bookings."
+          );
+        }
+
+        if (!jwtResponse.ok) {
+          throw new Error(
+            jwtData.message || "JWT verification failed."
+          );
+        }
+
+        const services = serviceData.services || [];
+        const bookings = bookingData.bookings || [];
+
+        setTotalServices(services.length);
+
+        setPendingRequests(
+          bookings.filter(
+            (booking: { status: string }) =>
+              booking.status === "requested"
+          ).length
+        );
+
+        setCompletedJobs(
+          bookings.filter(
+            (booking: { status: string }) =>
+              booking.status === "completed"
+          ).length
+        );
+
+        setJwtStatus(jwtData.message);
       } catch (error) {
         setJwtStatus(
-          error instanceof Error ? error.message : "JWT test failed"
+          error instanceof Error
+            ? error.message
+            : "Failed to load dashboard."
         );
       }
     };
 
-    testJWT();
+    loadDashboard();
   }, []);
+
+  const stats = [
+    {
+      title: "Total Services",
+      value: totalServices,
+      icon: Wrench,
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      title: "Pending Requests",
+      value: pendingRequests,
+      icon: Clock,
+      color: "bg-orange-50 text-orange-600",
+    },
+    {
+      title: "Completed Jobs",
+      value: completedJobs,
+      icon: CheckCircle,
+      color: "bg-green-50 text-green-600",
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-10 sm:px-6 lg:px-8">
@@ -86,7 +132,9 @@ export default function TechnicianDashboard() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-500">{stat.title}</p>
+                    <p className="text-sm text-slate-500">
+                      {stat.title}
+                    </p>
                     <h2 className="mt-3 text-3xl font-bold text-[#142D4E]">
                       {stat.value}
                     </h2>
