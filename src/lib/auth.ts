@@ -1,9 +1,13 @@
 
+import dns from "node:dns";
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { jwt } from "better-auth/plugins";
 
+// Fix MongoDB DNS issue
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+console.log("Better Auth DNS:", dns.getServers());
 const client = new MongoClient(process.env.MONGODB_URI as string);
 const db = client.db();
 
@@ -19,8 +23,8 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-  type: ["customer", "technician"],
-  required: true,
+        type: ["customer", "technician"],
+        required: true,
         input: true,
       },
       phone: {
