@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, PlusCircle, Wrench } from "lucide-react";
+import { ArrowLeft, PlusCircle, Wrench, Trash2 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
 
 interface Service {
@@ -23,6 +22,7 @@ export default function MyServicesPage() {
   const [status, setStatus] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState("");
 
   useEffect(() => {
     async function loadServices() {
@@ -31,7 +31,6 @@ export default function MyServicesPage() {
         setError("");
 
         const response = await fetchWithAuth("/api/my-services");
-
         const result = await response.json();
 
         if (!response.ok) {
@@ -40,9 +39,7 @@ export default function MyServicesPage() {
 
         setServices(result.services || []);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Something went wrong."
-        );
+        setError(err instanceof Error ? err.message : "Something went wrong.");
       } finally {
         setLoading(false);
       }
@@ -50,6 +47,38 @@ export default function MyServicesPage() {
 
     loadServices();
   }, []);
+
+  async function handleDelete(serviceId: string, title: string) {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${title}"?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(serviceId);
+
+      const response = await fetchWithAuth(`/api/services/${serviceId}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to delete service.");
+      }
+
+      setServices((prev) =>
+        prev.filter((service) => service._id !== serviceId)
+      );
+    } catch (err) {
+      window.alert(
+        err instanceof Error ? err.message : "Something went wrong."
+      );
+    } finally {
+      setDeletingId("");
+    }
+  }
 
   const filteredServices =
     status === "all"
@@ -71,9 +100,7 @@ export default function MyServicesPage() {
 
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-[#142D4E]">
-              My Services
-            </h1>
+            <h1 className="text-3xl font-bold text-[#142D4E]">My Services</h1>
             <p className="mt-2 text-slate-500">
               View and manage all your repair service listings.
             </p>
@@ -160,9 +187,7 @@ export default function MyServicesPage() {
                       </span>
                     </div>
 
-                    <p className="text-sm text-slate-500">
-                      {service.category}
-                    </p>
+                    <p className="text-sm text-slate-500">{service.category}</p>
 
                     <p className="text-sm text-slate-600">
                       {service.description}
@@ -175,6 +200,19 @@ export default function MyServicesPage() {
                     <p className="text-xs capitalize text-slate-500">
                       {service.serviceMode}
                     </p>
+
+                    <button
+                      onClick={() =>
+                        handleDelete(service._id, service.title)
+                      }
+                      disabled={deletingId === service._id}
+                      className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                    >
+                      <Trash2 size={16} />
+                      {deletingId === service._id
+                        ? "Deleting..."
+                        : "Delete Service"}
+                    </button>
                   </div>
                 </div>
               ))}

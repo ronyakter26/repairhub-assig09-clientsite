@@ -1,5 +1,9 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { fetchWithAuth } from "@/lib/api";
 import {
   Users,
   Wrench,
@@ -8,32 +12,12 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-const stats = [
-  {
-    title: "Total Users",
-    value: "0",
-    icon: Users,
-    color: "bg-blue-50 text-blue-600",
-  },
-  {
-    title: "Total Services",
-    value: "0",
-    icon: Wrench,
-    color: "bg-orange-50 text-orange-600",
-  },
-  {
-    title: "Total Bookings",
-    value: "0",
-    icon: ClipboardList,
-    color: "bg-green-50 text-green-600",
-  },
-  {
-    title: "Total Transactions",
-    value: "0",
-    icon: CreditCard,
-    color: "bg-purple-50 text-purple-600",
-  },
-];
+interface DashboardStats {
+  totalUsers: number;
+  totalServices: number;
+  totalBookings: number;
+  totalTransactions: number;
+}
 
 const adminLinks = [
   {
@@ -67,6 +51,66 @@ const adminLinks = [
 ];
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalServices: 0,
+    totalBookings: 0,
+    totalTransactions: 0,
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const response = await fetchWithAuth("/api/admin/stats");
+
+const responseText = await response.text();
+
+console.log("Stats API Status:", response.status);
+console.log("Stats API Response:", responseText);
+
+if (!response.ok) {
+  throw new Error(
+    `Stats API failed: ${response.status} - ${responseText}`
+  );
+}
+
+const data = JSON.parse(responseText);
+setStats(data);
+      } catch (error) {
+        console.error("Dashboard stats error:", error);
+      }
+    };
+
+    loadStats();
+  }, []);
+
+  const statsCards = [
+    {
+      title: "Total Users",
+      value: stats.totalUsers,
+      icon: Users,
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      title: "Total Services",
+      value: stats.totalServices,
+      icon: Wrench,
+      color: "bg-orange-50 text-orange-600",
+    },
+    {
+      title: "Total Bookings",
+      value: stats.totalBookings,
+      icon: ClipboardList,
+      color: "bg-green-50 text-green-600",
+    },
+    {
+      title: "Total Transactions",
+      value: stats.totalTransactions,
+      icon: CreditCard,
+      color: "bg-purple-50 text-purple-600",
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -80,7 +124,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => {
+          {statsCards.map((stat) => {
             const Icon = stat.icon;
 
             return (
