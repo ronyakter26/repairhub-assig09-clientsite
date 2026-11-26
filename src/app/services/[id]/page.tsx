@@ -1,4 +1,4 @@
-
+import BookingForm from "./BookingForm";
 export const instant = false;
 
 import Link from "next/link";
@@ -139,12 +139,7 @@ export default async function ServiceDetailsPage({
               </p>
             </div>
 
-            <Link
-              href="/sign-in"
-              className="rounded-lg bg-[#F59E0B] px-7 py-4 text-center font-bold text-white transition hover:bg-amber-600"
-            >
-              Sign In to Request Repair
-            </Link>
+            <BookingForm serviceId={service._id} />
           </div>
         </div>
       </div>

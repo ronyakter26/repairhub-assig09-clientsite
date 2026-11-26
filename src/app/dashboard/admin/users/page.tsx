@@ -83,11 +83,16 @@ export default function ManageUsersPage() {
     }
   }
 
-  const filteredUsers = users.filter((user) =>
-    `${user.name} ${user.email}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+    const searchText = search.trim().toLowerCase();
+
+    return (
+      user.name?.toLowerCase().includes(searchText) ||
+      user.email?.toLowerCase().includes(searchText) ||
+      user.phone?.toLowerCase().includes(searchText) ||
+      user.role?.toLowerCase().includes(searchText)
+    );
+  });
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-10 sm:px-6 lg:px-8">
@@ -122,7 +127,7 @@ export default function ManageUsersPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search users..."
+                placeholder="Search by name, email, phone or role..."
                 className="w-full text-sm outline-none"
               />
             </div>

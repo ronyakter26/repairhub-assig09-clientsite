@@ -1,3 +1,4 @@
+export const instant = false;
 type Service = {
   _id: string;
   title: string;
@@ -23,10 +24,13 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const categories = [
-  "Mobile & Gadgets",
-  "Computer & Laptop",
-  "Home Appliances",
-  "Electronics",
+  "Smartphone",
+  "Laptop & PC",
+  "Air Conditioner",
+  "Refrigerator",
+  "Television",
+  "Washing Machine",
+  "Electrical",
 ];
 
 async function getServices(

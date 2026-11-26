@@ -226,17 +226,19 @@ export default function AddServicePage() {
               Service Mode
             </label>
             <select
-              name="serviceMode"
-              required
-              defaultValue=""
-              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none focus:border-[#F59E0B]"
-            >
-              <option value="" disabled>
-                Select service mode
-              </option>
-              <option value="Home Visit">Home Visit</option>
-              <option value="Shop Drop-off">Shop Drop-off</option>
-            </select>
+  name="category"
+  required
+  defaultValue=""
+  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none focus:border-[#F59E0B]"
+>
+  <option value="" disabled>
+    Select a category
+  </option>
+  <option value="Mobile & Gadgets">Mobile & Gadgets</option>
+  <option value="Computer & Laptop">Computer & Laptop</option>
+  <option value="Home Appliances">Home Appliances</option>
+  <option value="Electronics">Electronics</option>
+</select>
           </div>
 
           <div>
