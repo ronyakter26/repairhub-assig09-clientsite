@@ -22,6 +22,7 @@ export async function fetchWithAuth(
   const cleanEndpoint = endpoint.startsWith("/")
     ? endpoint
     : `/${endpoint}`;
+    console.log("PAYMENT API URL:", `${API_URL}${cleanEndpoint}`);
 
   return fetch(`${API_URL}${cleanEndpoint}`, {
     ...options,

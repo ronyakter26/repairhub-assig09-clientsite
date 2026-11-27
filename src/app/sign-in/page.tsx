@@ -232,10 +232,15 @@ export default function SignInPage() {
 
             {/* Sign In Button */}
             <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#F59E0B] py-4 font-bold text-[#142D4E] transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+  type="button"
+  onClick={() =>
+    authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    })
+  }
+  className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+>
               {loading ? "Signing In..." : "Sign In"}
               {!loading && <ArrowRight size={19} />}
             </button>
@@ -251,10 +256,15 @@ export default function SignInPage() {
 
             {/* Google Sign In */}
             <button
-              type="button"
-              disabled
-              className="flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-lg border border-slate-200 py-3 font-semibold text-slate-400 opacity-70"
-            >
+  type="button"
+  onClick={() =>
+    authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    })
+  }
+  className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+>
               <svg
                 viewBox="0 0 48 48"
                 className="h-5 w-5"
