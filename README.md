@@ -1,36 +1,160 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FixMate — Repair Service Marketplace
 
-## Getting Started
+FixMate is a full-stack repair service marketplace that connects customers with technicians. Customers can find repair services, request repairs, track job progress, and pay securely after service completion. Technicians can manage their services and repair requests, while administrators manage users, services, bookings, and transactions.
 
-First, run the development server:
+## 🌐 Live Website
+
+- **Live Site:** https://repairhub-assig09-clientsite-m7c8.vercel.app/
+- **Backend API:** https://repair-hub-assig09-server.vercel.app/
+
+## 🔐 Admin Demo Credentials
+
+Use the following credentials to explore the admin dashboard:
+
+- **Email:** ronyakter418@gmail.com
+- **Password:** Rony@123456
+
+## ✨ Key Features
+
+### Customer
+- Register and log in securely.
+- Browse, search, filter, and sort approved repair services.
+- View service details and technician information.
+- Submit repair requests.
+- Track booking and repair progress.
+- Cancel requests while they are still pending.
+- Pay for completed repair jobs using Stripe.
+- View payment history.
+- Update profile information and photo.
+
+### Technician
+- Manage technician profile.
+- Add repair services with images.
+- Update and delete personal service listings.
+- Manage service availability.
+- Accept or reject repair requests.
+- Update job status.
+- Set the final repair amount when completing a job.
+
+### Admin
+- View dashboard statistics.
+- Manage users and user roles.
+- Approve or reject repair services.
+- Monitor all bookings.
+- View payment transactions and total revenue.
+
+### Additional Features
+- Role-based dashboards and protected routes.
+- BetterAuth authentication.
+- JWT-based API authorization.
+- Responsive design for mobile, tablet, and desktop.
+- Toast notifications and confirmation dialogs.
+- Stripe test-mode payment integration.
+- ImgBB image upload integration.
+
+## 🛠️ Technology Stack
+
+**Frontend**
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Lucide React
+- Sonner
+
+**Authentication & Database**
+- BetterAuth
+- MongoDB
+- JWT
+
+**Backend & Payment**
+- Node.js
+- Express.js
+- Stripe
+- ImgBB API
+
+## 📦 NPM Packages
+
+### Frontend Dependencies
+- `next`
+- `react`
+- `react-dom`
+- `better-auth`
+- `@better-auth/mongo-adapter`
+- `mongodb`
+- `lucide-react`
+- `sonner`
+
+### Development Dependencies
+- `typescript`
+- `tailwindcss`
+- `eslint`
+- `eslint-config-next`
+- `@types/node`
+- `@types/react`
+- `@types/react-dom`
+- `@tailwindcss/turbopack`
+- `babel-plugin-react-compiler`
+
+## ⚙️ Installation & Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/ronyakter26/repairhub-assig09-clientsite.git
+```
+
+### 2. Go to the Project Directory
+
+```bash
+cd repairhub-assig09-clientsite
+```
+
+### 3. Install Dependencies
+
+```bash
+npm install
+```
+
+### 4. Configure Environment Variables
+
+Create a `.env.local` file in the project root and configure the required environment variables.
+
+Example:
+
+```env
+NEXT_PUBLIC_API_URL=your_backend_api_url
+MONGODB_URI=your_mongodb_connection_string
+BETTER_AUTH_SECRET=your_better_auth_secret
+```
+
+Add any other environment variables required by your authentication and image-upload configuration.
+
+**Never commit `.env.local` or expose secret keys in your repository.**
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 6. Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+## 📁 GitHub Repository
 
-To learn more about Next.js, take a look at the following resources:
+- **Client Repository:** https://github.com/ronyakter26/repairhub-assig09-clientsite
+- **Server Repository:** https://github.com/ronyakter26/repairhub-assig09-serversite
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 👨‍💻 Project Purpose
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+FixMate aims to make repair services easier to find and manage through a simple and user-friendly online platform. It provides a complete workflow for customers, technicians, and administrators, including service management, repair requests, job tracking, and secure online payments.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Developed as a Full-Stack Web Development Project.**
